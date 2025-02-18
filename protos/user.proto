@@ -8,7 +8,21 @@ option go_package = "github.com/imhasandl/user-service/protos";
 
 service UserService {
    rpc GetUserByID (GetUserByIDRequest) returns (GetUserByIDResponse) {}
+   rpc GetUserByEmailOrUsername (GetUserByEmailOrUsernameRequest) returns (GetUserByEmailOrUsernameResponse) {}
    rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse) {}
+
+   rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse) {}
+   rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse) {}
+
+   rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {}
+}
+
+message GetUserByEmailOrUsernameRequest {
+   string identifier = 1;
+}
+
+message GetUserByEmailOrUsernameResponse {
+   User user = 1;
 }
 
 message GetUserByIDRequest {
@@ -23,6 +37,28 @@ message GetAllUsersRequest {}
 
 message GetAllUsersResponse {
    repeated User users = 1;
+}
+
+message ChangeUsernameRequest {
+   string username = 1;
+}
+
+message ChangeUsernameResponse {
+   User user = 1;
+}
+
+message ChangePasswordRequest {
+   string password = 1;
+}
+
+message ChangePasswordResponse {
+   string status = 1;
+}
+
+message DeleteUserRequest {}
+
+message DeleteUserResponse {
+   string status = 1;
 }
 
 message User {
