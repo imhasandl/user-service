@@ -2,8 +2,36 @@ syntax = "proto3";
 
 package user;
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "github.com/imhasandl/user-service/protos";
 
 service UserService {
-   
+   rpc GetUserByID (GetUserByIDRequest) returns (GetUserByIDResponse) {}
+   rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse) {}
 }
+
+message GetUserByIDRequest {
+   string id = 1;
+}
+
+message GetUserByIDResponse {
+   User user = 1;
+}
+
+message GetAllUsersRequest {}
+
+message GetAllUsersResponse {
+   repeated User users = 1;
+}
+
+message User {
+  string id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
+  string email = 4;
+  string username = 5;
+  bool is_premium = 6;
+}
+
+// protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative user.proto
