@@ -11,36 +11,36 @@ import (
 	"github.com/google/uuid"
 )
 
-const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, created_at, updated_at, email, password, username, is_premium)
-VALUES (
-   $1,
-   NOW(),
-   NOW(),
-   $2,
-   $3,
-   $4,
-   $5
-)
+const changePassword = `-- name: ChangePassword :exec
+UPDATE users
+SET password = $2, updated_at = NOW()
+WHERE id = $1
+`
+
+type ChangePasswordParams struct {
+	ID       uuid.UUID
+	Password string
+}
+
+func (q *Queries) ChangePassword(ctx context.Context, arg ChangePasswordParams) error {
+	_, err := q.db.ExecContext(ctx, changePassword, arg.ID, arg.Password)
+	return err
+}
+
+const changeUsername = `-- name: ChangeUsername :one
+UPDATE users
+SET username = $2, updated_at = NOW()
+WHERE id = $1
 RETURNING id, created_at, updated_at, email, password, username, is_premium
 `
 
-type CreateUserParams struct {
-	ID        uuid.UUID
-	Email     string
-	Password  string
-	Username  string
-	IsPremium bool
+type ChangeUsernameParams struct {
+	ID       uuid.UUID
+	Username string
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
-		arg.ID,
-		arg.Email,
-		arg.Password,
-		arg.Username,
-		arg.IsPremium,
-	)
+func (q *Queries) ChangeUsername(ctx context.Context, arg ChangeUsernameParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, changeUsername, arg.ID, arg.Username)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -54,18 +54,94 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
-const getUserByIdentifier = `-- name: GetUserByIdentifier :one
+const deleteUser = `-- name: DeleteUser :one
+DELETE FROM users
+WHERE id = $1
+RETURNING id, created_at, updated_at, email, password, username, is_premium
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRowContext(ctx, deleteUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+		&i.Password,
+		&i.Username,
+		&i.IsPremium,
+	)
+	return i, err
+}
+
+const getAllUsers = `-- name: GetAllUsers :many
+SELECT id, created_at, updated_at, email, password, username, is_premium FROM users
+`
+
+func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getAllUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Email,
+			&i.Password,
+			&i.Username,
+			&i.IsPremium,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserByEmailOrUsername = `-- name: GetUserByEmailOrUsername :one
 SELECT id, created_at, updated_at, email, password, username, is_premium FROM users
 WHERE email = $1 OR username = $2
 `
 
-type GetUserByIdentifierParams struct {
+type GetUserByEmailOrUsernameParams struct {
 	Email    string
 	Username string
 }
 
-func (q *Queries) GetUserByIdentifier(ctx context.Context, arg GetUserByIdentifierParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByIdentifier, arg.Email, arg.Username)
+func (q *Queries) GetUserByEmailOrUsername(ctx context.Context, arg GetUserByEmailOrUsernameParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmailOrUsername, arg.Email, arg.Username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+		&i.Password,
+		&i.Username,
+		&i.IsPremium,
+	)
+	return i, err
+}
+
+const getUserById = `-- name: GetUserById :one
+SELECT id, created_at, updated_at, email, password, username, is_premium FROM users
+WHERE id = $1
+`
+
+func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserById, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
