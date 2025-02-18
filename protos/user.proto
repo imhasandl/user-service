@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/imhasandl/user-service/protos";
+
+service UserService {
+   
+}
