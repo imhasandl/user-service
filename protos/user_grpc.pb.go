@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	UserService_GetUserByID_FullMethodName              = "/user.UserService/GetUserByID"
 	UserService_GetUserByEmailOrUsername_FullMethodName = "/user.UserService/GetUserByEmailOrUsername"
+	UserService_GetUserByToken_FullMethodName           = "/user.UserService/GetUserByToken"
 	UserService_GetAllUsers_FullMethodName              = "/user.UserService/GetAllUsers"
 	UserService_ChangeUsername_FullMethodName           = "/user.UserService/ChangeUsername"
 	UserService_ChangePassword_FullMethodName           = "/user.UserService/ChangePassword"
@@ -33,6 +34,7 @@ const (
 type UserServiceClient interface {
 	GetUserByID(ctx context.Context, in *GetUserByIDRequest, opts ...grpc.CallOption) (*GetUserByIDResponse, error)
 	GetUserByEmailOrUsername(ctx context.Context, in *GetUserByEmailOrUsernameRequest, opts ...grpc.CallOption) (*GetUserByEmailOrUsernameResponse, error)
+	GetUserByToken(ctx context.Context, in *GetUserByTokenRequest, opts ...grpc.CallOption) (*GetUserByTokenResponse, error)
 	GetAllUsers(ctx context.Context, in *GetAllUsersRequest, opts ...grpc.CallOption) (*GetAllUsersResponse, error)
 	ChangeUsername(ctx context.Context, in *ChangeUsernameRequest, opts ...grpc.CallOption) (*ChangeUsernameResponse, error)
 	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
@@ -61,6 +63,16 @@ func (c *userServiceClient) GetUserByEmailOrUsername(ctx context.Context, in *Ge
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetUserByEmailOrUsernameResponse)
 	err := c.cc.Invoke(ctx, UserService_GetUserByEmailOrUsername_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUserByToken(ctx context.Context, in *GetUserByTokenRequest, opts ...grpc.CallOption) (*GetUserByTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserByTokenResponse)
+	err := c.cc.Invoke(ctx, UserService_GetUserByToken_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +125,7 @@ func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserReques
 type UserServiceServer interface {
 	GetUserByID(context.Context, *GetUserByIDRequest) (*GetUserByIDResponse, error)
 	GetUserByEmailOrUsername(context.Context, *GetUserByEmailOrUsernameRequest) (*GetUserByEmailOrUsernameResponse, error)
+	GetUserByToken(context.Context, *GetUserByTokenRequest) (*GetUserByTokenResponse, error)
 	GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error)
 	ChangeUsername(context.Context, *ChangeUsernameRequest) (*ChangeUsernameResponse, error)
 	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
@@ -132,6 +145,9 @@ func (UnimplementedUserServiceServer) GetUserByID(context.Context, *GetUserByIDR
 }
 func (UnimplementedUserServiceServer) GetUserByEmailOrUsername(context.Context, *GetUserByEmailOrUsernameRequest) (*GetUserByEmailOrUsernameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByEmailOrUsername not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserByToken(context.Context, *GetUserByTokenRequest) (*GetUserByTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserByToken not implemented")
 }
 func (UnimplementedUserServiceServer) GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllUsers not implemented")
@@ -198,6 +214,24 @@ func _UserService_GetUserByEmailOrUsername_Handler(srv interface{}, ctx context.
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetUserByEmailOrUsername(ctx, req.(*GetUserByEmailOrUsernameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUserByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserByToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetUserByToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserByToken(ctx, req.(*GetUserByTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -288,6 +322,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserByEmailOrUsername",
 			Handler:    _UserService_GetUserByEmailOrUsername_Handler,
+		},
+		{
+			MethodName: "GetUserByToken",
+			Handler:    _UserService_GetUserByToken_Handler,
 		},
 		{
 			MethodName: "GetAllUsers",
