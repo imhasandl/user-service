@@ -31,7 +31,7 @@ const changeUsername = `-- name: ChangeUsername :one
 UPDATE users
 SET username = $2, updated_at = NOW()
 WHERE id = $1
-RETURNING id, created_at, updated_at, email, password, username, is_premium
+RETURNING id, created_at, updated_at, email, password, username, is_premium, verification_code, is_verified
 `
 
 type ChangeUsernameParams struct {
@@ -50,33 +50,23 @@ func (q *Queries) ChangeUsername(ctx context.Context, arg ChangeUsernameParams) 
 		&i.Password,
 		&i.Username,
 		&i.IsPremium,
+		&i.VerificationCode,
+		&i.IsVerified,
 	)
 	return i, err
 }
 
-const deleteUser = `-- name: DeleteUser :one
+const deleteAllUsers = `-- name: DeleteAllUsers :exec
 DELETE FROM users
-WHERE id = $1
-RETURNING id, created_at, updated_at, email, password, username, is_premium
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) (User, error) {
-	row := q.db.QueryRowContext(ctx, deleteUser, id)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Email,
-		&i.Password,
-		&i.Username,
-		&i.IsPremium,
-	)
-	return i, err
+func (q *Queries) DeleteAllUsers(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllUsers)
+	return err
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, created_at, updated_at, email, password, username, is_premium FROM users
+SELECT id, created_at, updated_at, email, password, username, is_premium, verification_code, is_verified FROM users
 `
 
 func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
@@ -96,6 +86,8 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 			&i.Password,
 			&i.Username,
 			&i.IsPremium,
+			&i.VerificationCode,
+			&i.IsVerified,
 		); err != nil {
 			return nil, err
 		}
@@ -111,7 +103,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const getUserByEmailOrUsername = `-- name: GetUserByEmailOrUsername :one
-SELECT id, created_at, updated_at, email, password, username, is_premium FROM users
+SELECT id, created_at, updated_at, email, password, username, is_premium, verification_code, is_verified FROM users
 WHERE email = $1 OR username = $2
 `
 
@@ -131,12 +123,14 @@ func (q *Queries) GetUserByEmailOrUsername(ctx context.Context, arg GetUserByEma
 		&i.Password,
 		&i.Username,
 		&i.IsPremium,
+		&i.VerificationCode,
+		&i.IsVerified,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, created_at, updated_at, email, password, username, is_premium FROM users
+SELECT id, created_at, updated_at, email, password, username, is_premium, verification_code, is_verified FROM users
 WHERE id = $1
 `
 
@@ -151,6 +145,8 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Password,
 		&i.Username,
 		&i.IsPremium,
+		&i.VerificationCode,
+		&i.IsVerified,
 	)
 	return i, err
 }

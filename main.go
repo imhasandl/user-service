@@ -6,6 +6,8 @@ import (
 	"net"
 	"os"
 
+	_ "github.com/lib/pq" // Import the postgres driver
+
 	"github.com/imhasandl/user-service/cmd/server"
 	"github.com/imhasandl/user-service/internal/database"
 	pb "github.com/imhasandl/user-service/protos"

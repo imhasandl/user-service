@@ -9,13 +9,14 @@ option go_package = "github.com/imhasandl/user-service/protos";
 service UserService {
    rpc GetUserByID (GetUserByIDRequest) returns (GetUserByIDResponse) {}
    rpc GetUserByEmailOrUsername (GetUserByEmailOrUsernameRequest) returns (GetUserByEmailOrUsernameResponse) {}
+
    rpc GetUserByToken (GetUserByTokenRequest) returns (GetUserByTokenResponse) {}
    rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse) {}
 
    rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse) {}
    rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse) {}
 
-   rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {}
+   rpc DeleteAllUsers (DeleteAllUsersRequest) returns (DeleteAllUsersResponse) {} // For developing purposes
 }
 
 message GetUserByEmailOrUsernameRequest {
@@ -62,9 +63,9 @@ message ChangePasswordResponse {
    string status = 1;
 }
 
-message DeleteUserRequest {}
+message DeleteAllUsersRequest {}
 
-message DeleteUserResponse {
+message DeleteAllUsersResponse {
    string status = 1;
 }
 
@@ -75,6 +76,8 @@ message User {
   string email = 4;
   string username = 5;
   bool is_premium = 6;
+  string verification_code = 7;
+  bool is_verified = 8;
 }
 
 // protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative user.proto

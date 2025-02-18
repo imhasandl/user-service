@@ -20,7 +20,5 @@ UPDATE users
 SET password = $2, updated_at = NOW()
 WHERE id = $1;
 
--- name: DeleteUser :one
-DELETE FROM users
-WHERE id = $1
-RETURNING *;
+-- name: DeleteAllUsers :exec
+DELETE FROM users;

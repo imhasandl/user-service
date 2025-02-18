@@ -11,11 +11,13 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Email     string
-	Password  string
-	Username  string
-	IsPremium bool
+	ID               uuid.UUID
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	Email            string
+	Password         string
+	Username         string
+	IsPremium        bool
+	VerificationCode string
+	IsVerified       bool
 }

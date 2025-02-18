@@ -75,6 +75,62 @@ func (s *server) GetUserByID(ctx context.Context, req *pb.GetUserByIDRequest) (*
 		},
 	}, nil
 }
+
+func (s *server) GetUserByToken(ctx context.Context, req *pb.GetUserByTokenRequest) (*pb.GetUserByTokenResponse, error) {
+	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "can't get token from header: %v - GetUserByToken", err)
+	}
+
+	userID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "can't validate token: %v - GetUserByToken", err)
+	}
+
+	user, err := s.db.GetUserById(ctx, userID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't get user from db: %v - GetUserByToken", err)
+	}
+
+	return &pb.GetUserByTokenResponse{
+		User: &pb.User{
+			Id: user.ID.String(),
+			CreatedAt: timestamppb.New(user.CreatedAt),
+			UpdatedAt: timestamppb.New(user.UpdatedAt),
+			Email: user.Email,
+			Username: user.Username,
+			IsPremium: user.IsPremium,
+			VerificationCode: user.VerificationCode,
+			IsVerified: user.IsVerified,
+		},
+	}, nil
+}
+
+func (s *server) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
+	users, err := s.db.GetAllUsers(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't get users from db: %v - GetAllUsers", err)
+	}
+
+	pbUsers := make([]*pb.User, len(users))
+	for i, user := range users {
+		pbUsers[i] = &pb.User{
+			Id: user.ID.String(),
+			CreatedAt: timestamppb.New(user.CreatedAt),
+			UpdatedAt: timestamppb.New(user.UpdatedAt),
+			Email: user.Email,
+			Username: user.Username,
+			IsPremium: user.IsPremium,
+			VerificationCode: user.VerificationCode,
+			IsVerified: user.IsPremium,
+		}
+	}
+
+	return &pb.GetAllUsersResponse{
+		Users: pbUsers,
+	}, nil
+}
+
 func (s *server) ChangeUsername(ctx context.Context, req *pb.ChangeUsernameRequest) (*pb.ChangeUsernameResponse, error) {
 	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
 	if err != nil {
@@ -139,23 +195,23 @@ func (s *server) ChangePassword(ctx context.Context, req *pb.ChangePasswordReque
 	}, nil
 }
 
-func (s *server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
-	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "can't get authorization token from header: %v - DeleteUser", err)
-	}
-
-	userID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
-	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "you are not allowed to delete user: %v - DeleteUser", err)
-	}
-
-	_, err = s.db.DeleteUser(ctx, userID)
+func (s *server) DeleteAllUsers(ctx context.Context, req *pb.DeleteAllUsersRequest) (*pb.DeleteAllUsersResponse, error) {
+	err := s.db.DeleteAllUsers(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "can't delete user from db: %v - DeleteUser", err)
 	}
 
-	return &pb.DeleteUserResponse{
-		Status: "user delete successfully",
+	return &pb.DeleteAllUsersResponse{
+		Status: "users deleted successfully",
 	}, nil
 }
+
+// accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
+// 	if err != nil {
+// 		return nil, status.Errorf(codes.InvalidArgument, "can't get authorization token from header: %v - DeleteUser", err)
+// 	}
+
+// 	userID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
+// 	if err != nil {
+// 		return nil, status.Errorf(codes.Unauthenticated, "you are not allowed to delete user: %v - DeleteUser", err)
+// 	}
