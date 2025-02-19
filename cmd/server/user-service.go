@@ -72,6 +72,8 @@ func (s *server) GetUserByID(ctx context.Context, req *pb.GetUserByIDRequest) (*
 			Email: user.Email,
 			Username: user.Username,
 			IsPremium: user.IsPremium,
+			VerificationCode: user.VerificationCode,
+			IsVerified: user.IsVerified,
 		},
 	}, nil
 }
@@ -122,7 +124,7 @@ func (s *server) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*
 			Username: user.Username,
 			IsPremium: user.IsPremium,
 			VerificationCode: user.VerificationCode,
-			IsVerified: user.IsPremium,
+			IsVerified: user.IsVerified,
 		}
 	}
 
@@ -160,6 +162,8 @@ func (s *server) ChangeUsername(ctx context.Context, req *pb.ChangeUsernameReque
 			Email:     user.Email,
 			Username:  user.Username,
 			IsPremium: user.IsPremium,
+			VerificationCode: user.VerificationCode,
+			IsVerified: user.IsVerified,
 		},
 	}, nil
 }

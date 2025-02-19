@@ -76,7 +76,7 @@ message User {
   string email = 4;
   string username = 5;
   bool is_premium = 6;
-  string verification_code = 7;
+  int32 verification_code = 7;
   bool is_verified = 8;
 }
 
