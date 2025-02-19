@@ -18,6 +18,7 @@ service UserService {
    rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse) {}
    rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse) {}
 
+   rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {} // Let User to delete his account
    rpc DeleteAllUsers (DeleteAllUsersRequest) returns (DeleteAllUsersResponse) {} // For developing purposes
 }
 
@@ -70,6 +71,15 @@ message ChangePasswordRequest {
 }
 
 message ChangePasswordResponse {
+   string status = 1;
+}
+
+message DeleteUserRequest {
+   string password = 1;
+   string verify_message = 2; 
+}
+
+message DeleteUserResponse {
    string status = 1;
 }
 

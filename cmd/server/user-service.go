@@ -226,6 +226,39 @@ func (s *server) ChangePassword(ctx context.Context, req *pb.ChangePasswordReque
 	}, nil
 }
 
+func (s *server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
+	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "can't get authorization token from header: %v - DeleteUser", err)
+	}
+
+	userID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "you are not allowed to delete user: %v - DeleteUser", err)
+	}
+
+	user, err := s.db.GetUserById(ctx, userID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't get user from db: %v - DeleteUser", err)
+	}
+
+	if err := authService.CheckPassword(user.Password, req.GetPassword()); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "password is not correct: %v - DeleteUser", err)
+	}
+
+	if req.GetVerifyMessage() != "SUBMIT" {
+		return nil, status.Errorf(codes.InvalidArgument, "you must submit 'SUBMIT' to delete your account")
+	}
+
+	if err = s.db.DeleteUser(ctx, userID); err != nil {
+		return nil, status.Errorf(codes.Internal, "can't delete user from db: %v - DeleteUser", err)
+	}
+
+	return &pb.DeleteUserResponse{
+		Status: "success",
+	}, nil
+}
+
 func (s *server) DeleteAllUsers(ctx context.Context, req *pb.DeleteAllUsersRequest) (*pb.DeleteAllUsersResponse, error) {
 	err := s.db.DeleteAllUsers(ctx)
 	if err != nil {
@@ -236,13 +269,3 @@ func (s *server) DeleteAllUsers(ctx context.Context, req *pb.DeleteAllUsersReque
 		Status: "users deleted successfully",
 	}, nil
 }
-
-// accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
-// 	if err != nil {
-// 		return nil, status.Errorf(codes.InvalidArgument, "can't get authorization token from header: %v - DeleteUser", err)
-// 	}
-
-// 	userID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
-// 	if err != nil {
-// 		return nil, status.Errorf(codes.Unauthenticated, "you are not allowed to delete user: %v - DeleteUser", err)
-// 	}
