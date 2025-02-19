@@ -10,6 +10,8 @@ service UserService {
    rpc GetUserByID (GetUserByIDRequest) returns (GetUserByIDResponse) {}
    rpc GetUserByEmailOrUsername (GetUserByEmailOrUsernameRequest) returns (GetUserByEmailOrUsernameResponse) {}
 
+   rpc SearchUsers (SearchUsersRequest) returns (SearchUsersResponse) {}   
+
    rpc GetUserByToken (GetUserByTokenRequest) returns (GetUserByTokenResponse) {}
    rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse) {}
 
@@ -39,6 +41,14 @@ message GetAllUsersRequest {}
 
 message GetAllUsersResponse {
    repeated User users = 1;
+}
+
+message SearchUsersRequest {
+   string query = 1; 
+}
+
+message SearchUsersResponse {
+  repeated User users = 1; 
 }
 
 message GetUserByTokenRequest {}

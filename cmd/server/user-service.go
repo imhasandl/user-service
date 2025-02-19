@@ -2,14 +2,15 @@ package server
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
+	authService "github.com/imhasandl/auth-service/cmd/helper/auth"
 	postService "github.com/imhasandl/post-service/cmd/helper"
 	"github.com/imhasandl/user-service/internal/database"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	authService "github.com/imhasandl/auth-service/cmd/helper/auth"
 
 	pb "github.com/imhasandl/user-service/protos"
 )
@@ -53,6 +54,32 @@ func (s *server) GetUserByEmailOrUsername(
 	}, nil
 }
 
+func (s *server) SearchUsers(ctx context.Context, req *pb.SearchUsersRequest) (*pb.SearchUsersResponse, error) {
+	query := req.GetQuery()
+	nullQuery := sql.NullString{String: query, Valid: query != ""}
+
+	users, err := s.db.SearchUsers(ctx, nullQuery)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't search users from db: %v - SearchUsers", err)
+	}
+
+	pbUsers := make([]*pb.User, len(users))
+	for i, user := range users {
+		pbUsers[i] = &pb.User{
+			Id:        user.ID.String(),
+			CreatedAt: timestamppb.New(user.CreatedAt),
+			UpdatedAt: timestamppb.New(user.UpdatedAt),
+			Email:     user.Email,
+			Username:  user.Username,
+			IsPremium: user.IsPremium,
+		}
+	}
+
+	return &pb.SearchUsersResponse{
+		Users: pbUsers,
+	}, nil
+}
+
 func (s *server) GetUserByID(ctx context.Context, req *pb.GetUserByIDRequest) (*pb.GetUserByIDResponse, error) {
 	userID, err := uuid.Parse(req.GetId())
 	if err != nil {
@@ -66,14 +93,14 @@ func (s *server) GetUserByID(ctx context.Context, req *pb.GetUserByIDRequest) (*
 
 	return &pb.GetUserByIDResponse{
 		User: &pb.User{
-			Id: user.ID.String(),
-			CreatedAt: timestamppb.New(user.CreatedAt),
-			UpdatedAt: timestamppb.New(user.UpdatedAt),
-			Email: user.Email,
-			Username: user.Username,
-			IsPremium: user.IsPremium,
+			Id:               user.ID.String(),
+			CreatedAt:        timestamppb.New(user.CreatedAt),
+			UpdatedAt:        timestamppb.New(user.UpdatedAt),
+			Email:            user.Email,
+			Username:         user.Username,
+			IsPremium:        user.IsPremium,
 			VerificationCode: user.VerificationCode,
-			IsVerified: user.IsVerified,
+			IsVerified:       user.IsVerified,
 		},
 	}, nil
 }
@@ -96,14 +123,14 @@ func (s *server) GetUserByToken(ctx context.Context, req *pb.GetUserByTokenReque
 
 	return &pb.GetUserByTokenResponse{
 		User: &pb.User{
-			Id: user.ID.String(),
-			CreatedAt: timestamppb.New(user.CreatedAt),
-			UpdatedAt: timestamppb.New(user.UpdatedAt),
-			Email: user.Email,
-			Username: user.Username,
-			IsPremium: user.IsPremium,
+			Id:               user.ID.String(),
+			CreatedAt:        timestamppb.New(user.CreatedAt),
+			UpdatedAt:        timestamppb.New(user.UpdatedAt),
+			Email:            user.Email,
+			Username:         user.Username,
+			IsPremium:        user.IsPremium,
 			VerificationCode: user.VerificationCode,
-			IsVerified: user.IsVerified,
+			IsVerified:       user.IsVerified,
 		},
 	}, nil
 }
@@ -117,14 +144,14 @@ func (s *server) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*
 	pbUsers := make([]*pb.User, len(users))
 	for i, user := range users {
 		pbUsers[i] = &pb.User{
-			Id: user.ID.String(),
-			CreatedAt: timestamppb.New(user.CreatedAt),
-			UpdatedAt: timestamppb.New(user.UpdatedAt),
-			Email: user.Email,
-			Username: user.Username,
-			IsPremium: user.IsPremium,
+			Id:               user.ID.String(),
+			CreatedAt:        timestamppb.New(user.CreatedAt),
+			UpdatedAt:        timestamppb.New(user.UpdatedAt),
+			Email:            user.Email,
+			Username:         user.Username,
+			IsPremium:        user.IsPremium,
 			VerificationCode: user.VerificationCode,
-			IsVerified: user.IsVerified,
+			IsVerified:       user.IsVerified,
 		}
 	}
 
@@ -156,14 +183,14 @@ func (s *server) ChangeUsername(ctx context.Context, req *pb.ChangeUsernameReque
 
 	return &pb.ChangeUsernameResponse{
 		User: &pb.User{
-			Id:        user.ID.String(),
-			CreatedAt: timestamppb.New(user.CreatedAt),
-			UpdatedAt: timestamppb.New(user.UpdatedAt),
-			Email:     user.Email,
-			Username:  user.Username,
-			IsPremium: user.IsPremium,
+			Id:               user.ID.String(),
+			CreatedAt:        timestamppb.New(user.CreatedAt),
+			UpdatedAt:        timestamppb.New(user.UpdatedAt),
+			Email:            user.Email,
+			Username:         user.Username,
+			IsPremium:        user.IsPremium,
 			VerificationCode: user.VerificationCode,
-			IsVerified: user.IsVerified,
+			IsVerified:       user.IsVerified,
 		},
 	}, nil
 }
@@ -177,7 +204,7 @@ func (s *server) ChangePassword(ctx context.Context, req *pb.ChangePasswordReque
 	userID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "you are not allowed to delete user: %v - ChangePassword", err)
-	}	
+	}
 
 	hashedPassword, err := authService.HashPassword(req.GetPassword())
 	if err != nil {
@@ -185,7 +212,7 @@ func (s *server) ChangePassword(ctx context.Context, req *pb.ChangePasswordReque
 	}
 
 	changePasswordParams := database.ChangePasswordParams{
-		ID: userID,
+		ID:       userID,
 		Password: hashedPassword,
 	}
 
