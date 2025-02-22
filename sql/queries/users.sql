@@ -26,7 +26,3 @@ WHERE id = $1;
 
 -- name: DeleteAllUsers :exec
 DELETE FROM users;
-
--- name: SearchUsers :many
-SELECT * FROM users
-WHERE username LIKE $1 || '%';
