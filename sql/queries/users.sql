@@ -26,3 +26,18 @@ WHERE id = $1;
 
 -- name: DeleteAllUsers :exec
 DELETE FROM users;
+
+-- name: ResetPassword :exec
+UPDATE users
+SET password = $2, updated_at = NOW()
+WHERE id = $1;
+
+-- name: SendResetVerificationCode :exec
+UPDATE users
+SET verification_code = $2
+WHERE id = $1;
+
+-- name: VerifyVrificationCode :exec
+UPDATE users 
+SET verification_code = 0
+WHERE id = $1;

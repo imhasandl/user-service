@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -162,40 +161,45 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 	return i, err
 }
 
-const searchUsers = `-- name: SearchUsers :many
-SELECT id, created_at, updated_at, email, password, username, is_premium, verification_code, is_verified FROM users
-WHERE username LIKE $1 || '%'
+const resetPassword = `-- name: ResetPassword :exec
+UPDATE users
+SET password = $2, updated_at = NOW()
+WHERE id = $1
 `
 
-func (q *Queries) SearchUsers(ctx context.Context, dollar_1 sql.NullString) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, searchUsers, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []User
-	for rows.Next() {
-		var i User
-		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Email,
-			&i.Password,
-			&i.Username,
-			&i.IsPremium,
-			&i.VerificationCode,
-			&i.IsVerified,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+type ResetPasswordParams struct {
+	ID       uuid.UUID
+	Password string
+}
+
+func (q *Queries) ResetPassword(ctx context.Context, arg ResetPasswordParams) error {
+	_, err := q.db.ExecContext(ctx, resetPassword, arg.ID, arg.Password)
+	return err
+}
+
+const sendResetVerificationCode = `-- name: SendResetVerificationCode :exec
+UPDATE users
+SET verification_code = $2
+WHERE id = $1
+`
+
+type SendResetVerificationCodeParams struct {
+	ID               uuid.UUID
+	VerificationCode int32
+}
+
+func (q *Queries) SendResetVerificationCode(ctx context.Context, arg SendResetVerificationCodeParams) error {
+	_, err := q.db.ExecContext(ctx, sendResetVerificationCode, arg.ID, arg.VerificationCode)
+	return err
+}
+
+const verifyVrificationCode = `-- name: VerifyVrificationCode :exec
+UPDATE users 
+SET verification_code = 0
+WHERE id = $1
+`
+
+func (q *Queries) VerifyVrificationCode(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, verifyVrificationCode, id)
+	return err
 }

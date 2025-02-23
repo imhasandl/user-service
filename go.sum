@@ -14,6 +14,8 @@ github.com/imhasandl/auth-service v0.0.0-20250218131833-9f6d7c427afe h1:W5HmWjjd
 github.com/imhasandl/auth-service v0.0.0-20250218131833-9f6d7c427afe/go.mod h1:HFA896S9L0dh7EJI98YV1R8x+qCeNaDFl+KSWCmsdHY=
 github.com/imhasandl/post-service v0.0.0-20250215171454-78f1c72f6d69 h1:hktaB+DqpR+0ItHeLKa+lFrmW4G5u85uvnGZ2zdWB+I=
 github.com/imhasandl/post-service v0.0.0-20250215171454-78f1c72f6d69/go.mod h1:mzMU8Fyqa0+EGtFC2d53wA2cNNDg4euXgud0TkdU7yM=
+github.com/imhasandl/post-service v0.0.0-20250222093426-47a211eccb1c h1:i5gFbGS2a1CO3+Y3ZziRkMdI7FDW/oDtxCGEoieMJ04=
+github.com/imhasandl/post-service v0.0.0-20250222093426-47a211eccb1c/go.mod h1:9uv/QroaDg+dONp1tXQCDPXju6amj0dxixS0YGjNEaE=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=

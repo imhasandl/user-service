@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 	authService "github.com/imhasandl/auth-service/cmd/helper/auth"
@@ -51,32 +50,6 @@ func (s *server) GetUserByEmailOrUsername(
 			Username:  user.Username,
 			IsPremium: user.IsPremium,
 		},
-	}, nil
-}
-
-func (s *server) SearchUsers(ctx context.Context, req *pb.SearchUsersRequest) (*pb.SearchUsersResponse, error) {
-	query := req.GetQuery()
-	nullQuery := sql.NullString{String: query, Valid: query != ""}
-
-	users, err := s.db.SearchUsers(ctx, nullQuery)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "can't search users from db: %v - SearchUsers", err)
-	}
-
-	pbUsers := make([]*pb.User, len(users))
-	for i, user := range users {
-		pbUsers[i] = &pb.User{
-			Id:        user.ID.String(),
-			CreatedAt: timestamppb.New(user.CreatedAt),
-			UpdatedAt: timestamppb.New(user.UpdatedAt),
-			Email:     user.Email,
-			Username:  user.Username,
-			IsPremium: user.IsPremium,
-		}
-	}
-
-	return &pb.SearchUsersResponse{
-		Users: pbUsers,
 	}, nil
 }
 
@@ -257,6 +230,10 @@ func (s *server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb
 	return &pb.DeleteUserResponse{
 		Status: "success",
 	}, nil
+}
+
+func (s *server) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*pb.ResetPasswordResponse, error) {
+	return nil, nil
 }
 
 func (s *server) DeleteAllUsers(ctx context.Context, req *pb.DeleteAllUsersRequest) (*pb.DeleteAllUsersResponse, error) {
