@@ -17,7 +17,6 @@ service UserService {
    rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse) {}
 
    rpc SendVerificationCode (SendVerificationCodeRequest) returns (SendVerificationCodeResponse) {}
-   rpc SendVerificationCodeAgain (SendVerificationCodeAgainRequest) returns (SendVerificationCodeAgainResponse) {}
    rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse) {}
 
    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {} // Let User to delete his account
