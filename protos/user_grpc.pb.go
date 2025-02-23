@@ -28,6 +28,8 @@ type UserServiceClient interface {
 	GetAllUsers(ctx context.Context, in *GetAllUsersRequest, opts ...grpc.CallOption) (*GetAllUsersResponse, error)
 	ChangeUsername(ctx context.Context, in *ChangeUsernameRequest, opts ...grpc.CallOption) (*ChangeUsernameResponse, error)
 	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
+	SendVerificationCode(ctx context.Context, in *SendVerificationCodeRequest, opts ...grpc.CallOption) (*SendVerificationCodeResponse, error)
+	SendVerificationCodeAgain(ctx context.Context, in *SendVerificationCodeAgainRequest, opts ...grpc.CallOption) (*SendVerificationCodeAgainResponse, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*ResetPasswordResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 	DeleteAllUsers(ctx context.Context, in *DeleteAllUsersRequest, opts ...grpc.CallOption) (*DeleteAllUsersResponse, error)
@@ -95,6 +97,24 @@ func (c *userServiceClient) ChangePassword(ctx context.Context, in *ChangePasswo
 	return out, nil
 }
 
+func (c *userServiceClient) SendVerificationCode(ctx context.Context, in *SendVerificationCodeRequest, opts ...grpc.CallOption) (*SendVerificationCodeResponse, error) {
+	out := new(SendVerificationCodeResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/SendVerificationCode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) SendVerificationCodeAgain(ctx context.Context, in *SendVerificationCodeAgainRequest, opts ...grpc.CallOption) (*SendVerificationCodeAgainResponse, error) {
+	out := new(SendVerificationCodeAgainResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/SendVerificationCodeAgain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*ResetPasswordResponse, error) {
 	out := new(ResetPasswordResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/ResetPassword", in, out, opts...)
@@ -132,6 +152,8 @@ type UserServiceServer interface {
 	GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error)
 	ChangeUsername(context.Context, *ChangeUsernameRequest) (*ChangeUsernameResponse, error)
 	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
+	SendVerificationCode(context.Context, *SendVerificationCodeRequest) (*SendVerificationCodeResponse, error)
+	SendVerificationCodeAgain(context.Context, *SendVerificationCodeAgainRequest) (*SendVerificationCodeAgainResponse, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	DeleteAllUsers(context.Context, *DeleteAllUsersRequest) (*DeleteAllUsersResponse, error)
@@ -159,6 +181,12 @@ func (UnimplementedUserServiceServer) ChangeUsername(context.Context, *ChangeUse
 }
 func (UnimplementedUserServiceServer) ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
+}
+func (UnimplementedUserServiceServer) SendVerificationCode(context.Context, *SendVerificationCodeRequest) (*SendVerificationCodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendVerificationCode not implemented")
+}
+func (UnimplementedUserServiceServer) SendVerificationCodeAgain(context.Context, *SendVerificationCodeAgainRequest) (*SendVerificationCodeAgainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendVerificationCodeAgain not implemented")
 }
 func (UnimplementedUserServiceServer) ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
@@ -290,6 +318,42 @@ func _UserService_ChangePassword_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_SendVerificationCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendVerificationCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SendVerificationCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/SendVerificationCode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SendVerificationCode(ctx, req.(*SendVerificationCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_SendVerificationCodeAgain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendVerificationCodeAgainRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SendVerificationCodeAgain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/SendVerificationCodeAgain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SendVerificationCodeAgain(ctx, req.(*SendVerificationCodeAgainRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserService_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ResetPasswordRequest)
 	if err := dec(in); err != nil {
@@ -374,6 +438,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ChangePassword",
 			Handler:    _UserService_ChangePassword_Handler,
+		},
+		{
+			MethodName: "SendVerificationCode",
+			Handler:    _UserService_SendVerificationCode_Handler,
+		},
+		{
+			MethodName: "SendVerificationCodeAgain",
+			Handler:    _UserService_SendVerificationCodeAgain_Handler,
 		},
 		{
 			MethodName: "ResetPassword",

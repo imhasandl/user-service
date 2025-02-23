@@ -193,13 +193,13 @@ func (q *Queries) SendResetVerificationCode(ctx context.Context, arg SendResetVe
 	return err
 }
 
-const verifyVrificationCode = `-- name: VerifyVrificationCode :exec
+const verifyVerificationCode = `-- name: VerifyVerificationCode :exec
 UPDATE users 
 SET verification_code = 0
 WHERE id = $1
 `
 
-func (q *Queries) VerifyVrificationCode(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, verifyVrificationCode, id)
+func (q *Queries) VerifyVerificationCode(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, verifyVerificationCode, id)
 	return err
 }

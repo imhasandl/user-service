@@ -2,11 +2,8 @@ module github.com/imhasandl/user-service
 
 go 1.23.5
 
-toolchain go1.23.6
-
 require (
 	github.com/google/uuid v1.6.0
-	github.com/imhasandl/auth-service v0.0.0-20250218131833-9f6d7c427afe
 	github.com/imhasandl/post-service v0.0.0-20250222093426-47a211eccb1c
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
@@ -16,9 +13,10 @@ require (
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/imhasandl/auth-service v0.0.0-20250223074031-296070dcbd56 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250219182151-9fdb1cabc7b2 // indirect
 )
