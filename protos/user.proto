@@ -16,6 +16,8 @@ service UserService {
    rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse) {}
    rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse) {}
 
+   rpc SendVerificationCode (SendVerificationCodeRequest) returns (SendVerificationCodeResponse) {}
+   rpc SendVerificationCodeAgain (SendVerificationCodeAgainRequest) returns (SendVerificationCodeAgainResponse) {}
    rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse) {}
 
    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {} // Let User to delete his account
@@ -74,8 +76,21 @@ message ChangePasswordResponse {
    string status = 1;
 }
 
+message SendVerificationCodeRequest {}
+
+message SendVerificationCodeResponse {
+   string status = 1;
+}
+
+message SendVerificationCodeAgainRequest {}
+
+message  SendVerificationCodeAgainResponse {
+   string status = 1;
+}
+
 message ResetPasswordRequest {
    string newPassword = 1;
+   int32 verification_code = 2;
 }
 
 message ResetPasswordResponse {

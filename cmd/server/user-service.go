@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	authService "github.com/imhasandl/auth-service/cmd/helper/auth"
+	authService "github.com/imhasandl/auth-service/cmd/helper"
 	postService "github.com/imhasandl/post-service/cmd/helper"
 	"github.com/imhasandl/user-service/internal/database"
 	"google.golang.org/grpc/codes"
@@ -232,8 +232,84 @@ func (s *server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb
 	}, nil
 }
 
+func (s *server) SendVerificationCode(
+	ctx context.Context, 
+	req *pb.SendVerificationCodeRequest,
+	) (*pb.SendVerificationCodeResponse, error) {
+
+	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "can't get authorization token from header: %v - Reset", err)
+	}
+
+	userID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "you are not allowed to reset password: %v - ResetPassword", err)
+	}
+
+	verificationCode, err := authService.GenerateVerificationCode()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't generate verification code: %v - ResetPassword", err)
+	}
+
+	sendResetVerificationCodeParams := database.SendResetVerificationCodeParams{
+		ID: userID,
+		VerificationCode: verificationCode,
+	}
+
+	err = s.db.SendResetVerificationCode(ctx, sendResetVerificationCodeParams)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't send verification code: %v - ResetPassword", err)
+	}
+
+	return &pb.SendVerificationCodeResponse{
+		Status: "Verification code sent",
+	}, nil
+}
+
 func (s *server) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*pb.ResetPasswordResponse, error) {
-	return nil, nil
+	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "can't get authorization token from header: %v - ResetPassword", err)
+	}
+
+	userID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "you are not allowed to reset password: %v - ResetPassword", err)
+	}
+
+	user, err := s.db.GetUserById(ctx, userID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't get user from db: %v - ResetPassword", err)
+	}
+
+	if req.GetVerificationCode() != user.VerificationCode {
+		return nil, status.Errorf(codes.InvalidArgument, "verification code is not correct")
+	}
+
+	err = s.db.VerifyVerificationCode(ctx, userID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't verify verification code: %v - ResetPassword", err)
+	}
+
+	newPassword, err := authService.HashPassword(req.NewPassword)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't hash new password: %v - ResetPassword", err)
+	}
+
+	resetPasswordParams := database.ResetPasswordParams{
+		ID: userID,
+		Password: newPassword,
+	}
+
+	err = s.db.ResetPassword(ctx, resetPasswordParams)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't reset password: %v - ResetPassword", err)
+	}
+
+	return &pb.ResetPasswordResponse{
+		Status: "Password changed successfully",
+	}, nil
 }
 
 func (s *server) DeleteAllUsers(ctx context.Context, req *pb.DeleteAllUsersRequest) (*pb.DeleteAllUsersResponse, error) {

@@ -37,7 +37,7 @@ UPDATE users
 SET verification_code = $2
 WHERE id = $1;
 
--- name: VerifyVrificationCode :exec
+-- name: VerifyVerificationCode :exec
 UPDATE users 
 SET verification_code = 0
 WHERE id = $1;
