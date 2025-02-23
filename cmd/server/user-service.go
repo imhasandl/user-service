@@ -18,6 +18,7 @@ type server struct {
 	pb.UnimplementedUserServiceServer
 	db          *database.Queries
 	tokenSecret string
+	emailSecret string
 }
 
 func NewServer(dbQueries *database.Queries, tokenSecret string) *server {
@@ -247,6 +248,11 @@ func (s *server) SendVerificationCode(
 		return nil, status.Errorf(codes.Unauthenticated, "you are not allowed to reset password: %v - ResetPassword", err)
 	}
 
+	user, err := s.db.GetUserById(ctx, userID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't get user from db: %v - ResetPassword", err)
+	}
+
 	verificationCode, err := authService.GenerateVerificationCode()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "can't generate verification code: %v - ResetPassword", err)
@@ -260,6 +266,11 @@ func (s *server) SendVerificationCode(
 	err = s.db.SendResetVerificationCode(ctx, sendResetVerificationCodeParams)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "can't send verification code: %v - ResetPassword", err)
+	}
+
+	err = authService.SendVerificationEmail(user.Email, s.emailSecret, verificationCode)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't send verification email: %v - ResetPassword", err)
 	}
 
 	return &pb.SendVerificationCodeResponse{

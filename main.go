@@ -30,6 +30,11 @@ func main() {
 	if dbURL == "" {
 		log.Fatalf("Set db connection in env")
 	}
+	
+	emailSecret := os.Getenv("EMAIL_SECRET")
+	if emailSecret == "" {
+		log.Fatalf("Set up Email Secret")
+	}
 
 	tokenSecret := os.Getenv("TOKEN_SECRET")
 	if tokenSecret == "" {
