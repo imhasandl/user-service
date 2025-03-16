@@ -6,6 +6,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+
 const (
 	ExchangeName = "notifications.topic"
 	QueueName    = "notification_service_queue"
