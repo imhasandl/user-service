@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const changePassword = `-- name: ChangePassword :exec
@@ -31,7 +32,7 @@ const changeUsername = `-- name: ChangeUsername :one
 UPDATE users
 SET username = $2, updated_at = NOW()
 WHERE id = $1
-RETURNING id, created_at, updated_at, email, password, username, is_premium, verification_code, is_verified
+RETURNING id, created_at, updated_at, email, password, username, subscribers, subscribed_to, is_premium, verification_code, is_verified
 `
 
 type ChangeUsernameParams struct {
@@ -49,6 +50,8 @@ func (q *Queries) ChangeUsername(ctx context.Context, arg ChangeUsernameParams) 
 		&i.Email,
 		&i.Password,
 		&i.Username,
+		pq.Array(&i.Subscribers),
+		pq.Array(&i.SubscribedTo),
 		&i.IsPremium,
 		&i.VerificationCode,
 		&i.IsVerified,
@@ -76,7 +79,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, created_at, updated_at, email, password, username, is_premium, verification_code, is_verified FROM users
+SELECT id, created_at, updated_at, email, password, username, subscribers, subscribed_to, is_premium, verification_code, is_verified FROM users
 `
 
 func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
@@ -95,6 +98,8 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 			&i.Email,
 			&i.Password,
 			&i.Username,
+			pq.Array(&i.Subscribers),
+			pq.Array(&i.SubscribedTo),
 			&i.IsPremium,
 			&i.VerificationCode,
 			&i.IsVerified,
@@ -113,7 +118,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const getUserByEmailOrUsername = `-- name: GetUserByEmailOrUsername :one
-SELECT id, created_at, updated_at, email, password, username, is_premium, verification_code, is_verified FROM users
+SELECT id, created_at, updated_at, email, password, username, subscribers, subscribed_to, is_premium, verification_code, is_verified FROM users
 WHERE email = $1 OR username = $2
 `
 
@@ -132,6 +137,8 @@ func (q *Queries) GetUserByEmailOrUsername(ctx context.Context, arg GetUserByEma
 		&i.Email,
 		&i.Password,
 		&i.Username,
+		pq.Array(&i.Subscribers),
+		pq.Array(&i.SubscribedTo),
 		&i.IsPremium,
 		&i.VerificationCode,
 		&i.IsVerified,
@@ -140,7 +147,7 @@ func (q *Queries) GetUserByEmailOrUsername(ctx context.Context, arg GetUserByEma
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, created_at, updated_at, email, password, username, is_premium, verification_code, is_verified FROM users
+SELECT id, created_at, updated_at, email, password, username, subscribers, subscribed_to, is_premium, verification_code, is_verified FROM users
 WHERE id = $1
 `
 
@@ -154,6 +161,8 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Email,
 		&i.Password,
 		&i.Username,
+		pq.Array(&i.Subscribers),
+		pq.Array(&i.SubscribedTo),
 		&i.IsPremium,
 		&i.VerificationCode,
 		&i.IsVerified,
@@ -190,6 +199,15 @@ type SendResetVerificationCodeParams struct {
 
 func (q *Queries) SendResetVerificationCode(ctx context.Context, arg SendResetVerificationCodeParams) error {
 	_, err := q.db.ExecContext(ctx, sendResetVerificationCode, arg.ID, arg.VerificationCode)
+	return err
+}
+
+const subscribeUser = `-- name: SubscribeUser :exec
+BEGIN
+`
+
+func (q *Queries) SubscribeUser(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, subscribeUser)
 	return err
 }
 
