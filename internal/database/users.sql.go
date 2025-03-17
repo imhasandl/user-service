@@ -223,6 +223,27 @@ func (q *Queries) SubscribeUser(ctx context.Context, arg SubscribeUserParams) er
 	return err
 }
 
+const unsubscribeUser = `-- name: UnsubscribeUser :exec
+WITH unsubscribed_update AS (
+    UPDATE users
+    SET subscribed_to = array_remove(subscribed_to, $1)
+    WHERE id = $2
+)
+UPDATE users
+SET subscribers = array_remove(subscribers, $2)
+WHERE users.id = $1
+`
+
+type UnsubscribeUserParams struct {
+	ID          uuid.UUID
+	ArrayRemove interface{}
+}
+
+func (q *Queries) UnsubscribeUser(ctx context.Context, arg UnsubscribeUserParams) error {
+	_, err := q.db.ExecContext(ctx, unsubscribeUser, arg.ID, arg.ArrayRemove)
+	return err
+}
+
 const verifyVerificationCode = `-- name: VerifyVerificationCode :exec
 UPDATE users 
 SET verification_code = 0

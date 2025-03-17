@@ -232,7 +232,34 @@ func (s *server) SubscribeUser(ctx context.Context, req *pb.SubscribeUserRequest
 }
 
 func (s *server) UnsubscribeUser(ctx context.Context, req *pb.UnsubscribeUserRequest) (*pb.UnsubscribeUserReponse, error) {
-	return nil, nil
+	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't token from ctx - UnsubscribeUser", err)
+	}
+
+	unSubscriberUserID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't validate provided token - UnsubscribeUser", err)
+	}
+
+	unSubscribedUserID, err := uuid.Parse(req.GetUserId())
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't parse user's uuid - UnsubscribeUser", err)
+	}
+
+	unSubscribeUserParamsParams := database.UnsubscribeUserParams{
+		ID:          unSubscribedUserID,
+		ArrayRemove: unSubscriberUserID,
+	}
+
+	err = s.db.UnsubscribeUser(ctx, unSubscribeUserParamsParams)
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.Internal, "can't unsub to user - UnsubscribeUser", err)
+	}
+
+	return &pb.UnsubscribeUserReponse{
+		Status: true,
+	}, nil
 }
 
 func (s *server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
