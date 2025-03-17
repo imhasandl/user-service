@@ -201,30 +201,30 @@ func (s *server) ChangePassword(ctx context.Context, req *pb.ChangePasswordReque
 }
 
 func (s *server) SubscribeUser(ctx context.Context, req *pb.SubscribeUserRequest) (*pb.SubscribeUserResponse, error) {
-	// accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
-	// if err != nil {
-	// 	return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't token from ctx - SubscribeUser", err)
-	// }
+	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't token from ctx - SubscribeUser", err)
+	}
 
-	// subscriberUserID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
-	// if err != nil {
-	// 	return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't validate provided token - SubscribeUser", err)
-	// }
+	subscriberUserID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't validate provided token - SubscribeUser", err)
+	}
 
-	// subscribedUserID, err := uuid.Parse(req.GetUserId())
-	// if err != nil {
-	// 	return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't parse user's uuid - SubscribeUser", err)
-	// }
+	subscribedUserID, err := uuid.Parse(req.GetUserId())
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't parse user's uuid - SubscribeUser", err)
+	}
 
-	// subscribeUserParamsParams := database.SubscribeUserParams{
-	// 	ID:          subscribedUserID,
-	// 	ArrayAppend: subscriberUserID,
-	// }
+	subscribeUserParamsParams := database.SubscribeUserParams{
+		ID:          subscribedUserID,
+		ArrayAppend: subscriberUserID,
+	}
 
-	// err = s.db.SubscribeUser(ctx, subscribeUserParamsParams)
-	// if err != nil {
-	// 	return nil, helper.RespondWithErrorGRPC(ctx, codes.Internal, "can't sub to user - SubscribeUser", err)
-	// }
+	err = s.db.SubscribeUser(ctx, subscribeUserParamsParams)
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.Internal, "can't sub to user - SubscribeUser", err)
+	}
 
 	return &pb.SubscribeUserResponse{
 		Status: true,

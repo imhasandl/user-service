@@ -21,10 +21,14 @@ SET password = $2, updated_at = NOW()
 WHERE id = $1;
 
 -- name: SubscribeUser :exec
-BEGIN;
-   UPDATE users SET subscribers = array_append(subscribers, $2) WHERE id = $1;
-   UPDATE users SET subscribed_to = array_append(subscribed_to, $1) WHERE id = $2;
-COMMIT;
+WITH subscribed_update AS (
+    UPDATE users
+    SET subscribed_to = array_append(subscribed_to, $1)
+    WHERE id = $2
+)
+UPDATE users
+SET subscribers = array_append(subscribers, $2)
+WHERE users.id = $1;
 
 -- name: DeleteUser :exec
 DELETE FROM users
