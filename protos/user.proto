@@ -16,6 +16,9 @@ service UserService {
    rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse) {}
    rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse) {}
 
+   rpc SubscribeUser (SubscribeUserRequest) returns (SubscribeUserResponse) {}
+   rpc UnsubscribeUser (UnsubscribeUserRequest) returns (UnsubscribeUserReponse) {}
+
    rpc SendVerificationCode (SendVerificationCodeRequest) returns (SendVerificationCodeResponse) {}
    rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse) {}
 
@@ -73,6 +76,22 @@ message ChangePasswordRequest {
 
 message ChangePasswordResponse {
    string status = 1;
+}
+
+message SubscribeUserRequest {
+   string user_id = 1;
+}
+
+message SubscribeUserResponse {
+   bool status = 1;
+}
+
+message UnsubscribeUserRequest {
+   string user_id = 1;
+}
+
+message UnsubscribeUserReponse {
+   bool status = 1; 
 }
 
 message SendVerificationCodeRequest {}
