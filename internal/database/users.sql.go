@@ -203,11 +203,23 @@ func (q *Queries) SendResetVerificationCode(ctx context.Context, arg SendResetVe
 }
 
 const subscribeUser = `-- name: SubscribeUser :exec
-BEGIN
+WITH subscribed_update AS (
+    UPDATE users
+    SET subscribed_to = array_append(subscribed_to, $1)
+    WHERE id = $2
+)
+UPDATE users
+SET subscribers = array_append(subscribers, $2)
+WHERE users.id = $1
 `
 
-func (q *Queries) SubscribeUser(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, subscribeUser)
+type SubscribeUserParams struct {
+	ID          uuid.UUID
+	ArrayAppend interface{}
+}
+
+func (q *Queries) SubscribeUser(ctx context.Context, arg SubscribeUserParams) error {
+	_, err := q.db.ExecContext(ctx, subscribeUser, arg.ID, arg.ArrayAppend)
 	return err
 }
 
