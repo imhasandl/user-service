@@ -5,7 +5,7 @@ go 1.23.5
 require (
 	github.com/google/uuid v1.6.0
 	github.com/imhasandl/auth-service v0.0.0-20250223074031-296070dcbd56
-	github.com/imhasandl/post-service v0.0.0-20250222093426-47a211eccb1c
+	github.com/imhasandl/post-service v0.0.0-20250316144540-20935e955501
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/streadway/amqp v1.1.0

@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	authService "github.com/imhasandl/auth-service/cmd/helper"
-	postService "github.com/imhasandl/post-service/cmd/helper"
+	postService "github.com/imhasandl/post-service/cmd/auth"
 	"github.com/imhasandl/user-service/internal/database"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -200,8 +200,35 @@ func (s *server) ChangePassword(ctx context.Context, req *pb.ChangePasswordReque
 	}, nil
 }
 
-func (s *server) SubscribeUser(ctx context.Context, req *pb.SubscribeUserResponse) (*pb.SubscribeUserRequest, error){
-	return nil, nil
+func (s *server) SubscribeUser(ctx context.Context, req *pb.SubscribeUserRequest) (*pb.SubscribeUserResponse, error) {
+	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't token from ctx - SubscribeUser", err)
+	}
+
+	subscriberUserID, err := postService.ValidateJWT(accessToken, s.tokenSecret)
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't validate provided token - SubscribeUser", err)
+	}
+
+	subscribedUserID, err := uuid.Parse(req.GetUserId())
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.InvalidArgument, "can't parse user's uuid - SubscribeUser", err)
+	}
+
+	// subscribeUserParamsParams := database.SubscribeUserParams{
+	// 	ID:          subscribedUserID,
+	// 	ArrayAppend: subscriberUserID,
+	// }
+
+	// err = s.db.SubscribeUser(ctx, subscribeUserParamsParams)
+	// if err != nil {
+	// 	return nil, helper.RespondWithErrorGRPC(ctx, codes.Internal, "can't sub to user - SubscribeUser", err)
+	// }
+
+	return &pb.SubscribeUserResponse{
+		Status: true,
+	}, nil
 }
 
 func (s *server) UnsubscribeUser(ctx context.Context, req *pb.UnsubscribeUserRequest) (*pb.UnsubscribeUserReponse, error) {
