@@ -200,6 +200,14 @@ func (s *server) ChangePassword(ctx context.Context, req *pb.ChangePasswordReque
 	}, nil
 }
 
+func (s *server) SubscribeUser(ctx context.Context, req *pb.SubscribeUserResponse) (*pb.SubscribeUserRequest, error){
+	return nil, nil
+}
+
+func (s *server) UnsubscribeUser(ctx context.Context, req *pb.UnsubscribeUserRequest) (*pb.UnsubscribeUserReponse, error) {
+	return nil, nil
+}
+
 func (s *server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
 	accessToken, err := postService.GetBearerTokenFromGrpc(ctx)
 	if err != nil {

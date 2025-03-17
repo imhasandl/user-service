@@ -6,6 +6,7 @@ CREATE TABLE users (
    email TEXT NOT NULL UNIQUE,
    password TEXT NOT NULL,
    username TEXT NOT NULL,
+   subscribers TEXT[],
    is_premium BOOLEAN NOT NULL DEFAULT FALSE,
    verification_code INT NOT NULL,
    is_verified BOOLEAN NOT NULL DEFAULT FALSE
