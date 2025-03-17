@@ -30,6 +30,16 @@ UPDATE users
 SET subscribers = array_append(subscribers, $2)
 WHERE users.id = $1;
 
+-- name: UnsubscribeUser :exec
+WITH unsubscribed_update AS (
+    UPDATE users
+    SET subscribed_to = array_remove(subscribed_to, $1)
+    WHERE id = $2
+)
+UPDATE users
+SET subscribers = array_remove(subscribers, $2)
+WHERE users.id = $1;
+
 -- name: DeleteUser :exec
 DELETE FROM users
 WHERE id = $1;
