@@ -7,6 +7,7 @@ import (
 	authService "github.com/imhasandl/auth-service/cmd/helper"
 	postService "github.com/imhasandl/post-service/cmd/auth"
 	"github.com/imhasandl/user-service/internal/database"
+	"github.com/imhasandl/user-service/internal/rabbitmq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -19,12 +20,14 @@ type server struct {
 	db          *database.Queries
 	tokenSecret string
 	emailSecret string
+	rabbitmq *rabbitmq.RabbitMQ
 }
 
-func NewServer(dbQueries *database.Queries, tokenSecret string) *server {
+func NewServer(dbQueries *database.Queries, tokenSecret string, rabbitmq *rabbitmq.RabbitMQ) *server {
 	return &server{
 		db:          dbQueries,
 		tokenSecret: tokenSecret,
+		rabbitmq: rabbitmq,
 	}
 }
 
