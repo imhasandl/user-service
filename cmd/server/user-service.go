@@ -2,12 +2,16 @@ package server
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	authService "github.com/imhasandl/auth-service/cmd/helper"
 	postService "github.com/imhasandl/post-service/cmd/auth"
 	"github.com/imhasandl/user-service/internal/database"
 	"github.com/imhasandl/user-service/internal/rabbitmq"
+	"github.com/streadway/amqp"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -227,6 +231,30 @@ func (s *server) SubscribeUser(ctx context.Context, req *pb.SubscribeUserRequest
 	err = s.db.SubscribeUser(ctx, subscribeUserParamsParams)
 	if err != nil {
 		return nil, helper.RespondWithErrorGRPC(ctx, codes.Internal, "can't sub to user - SubscribeUser", err)
+	}
+
+	messageJSON, err := json.Marshal(map[string]string{
+		"title":           "New Notification",
+		"sender_username": subscribedUserID.String(),
+		"receiver_id":     subscribedUserID.String(),
+		"content":         fmt.Sprintf("This user %v subscribed on you", subscriberUserID),
+		"sent_at":         time.Now().GoString(),
+	})
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.Internal, "can't send subscribe notification - SubscribeUser", err)
+	}
+
+	err = s.rabbitmq.Channel.Publish(
+		rabbitmq.ExchangeName, // exchange
+		rabbitmq.RoutingKey,   // routing key
+		false,                 // mandatory
+		false,                 // immediate
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        messageJSON,
+		})
+	if err != nil {
+		return nil, helper.RespondWithErrorGRPC(ctx, codes.Internal, "can't publish message to RabbitMQ - SubscribeUser", err)
 	}
 
 	return &pb.SubscribeUserResponse{
