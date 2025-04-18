@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	authService "github.com/imhasandl/auth-service/cmd/helper"
+	authService "github.com/imhasandl/auth-service/cmd/auth"
 	postService "github.com/imhasandl/post-service/cmd/auth"
 	"github.com/imhasandl/user-service/internal/database"
 	"github.com/imhasandl/user-service/internal/rabbitmq"
@@ -23,14 +23,17 @@ type server struct {
 	pb.UnimplementedUserServiceServer
 	db          *database.Queries
 	tokenSecret string
+	email string
 	emailSecret string
 	rabbitmq *rabbitmq.RabbitMQ
 }
 
-func NewServer(dbQueries *database.Queries, tokenSecret string, rabbitmq *rabbitmq.RabbitMQ) *server {
+func NewServer(dbQueries *database.Queries, tokenSecret string, email string, emailSecret string, rabbitmq *rabbitmq.RabbitMQ) *server {
 	return &server{
 		db:          dbQueries,
 		tokenSecret: tokenSecret,
+		email: email,
+		emailSecret: emailSecret,
 		rabbitmq: rabbitmq,
 	}
 }
@@ -361,7 +364,7 @@ func (s *server) SendVerificationCode(
 		return nil, helper.RespondWithErrorGRPC(ctx, codes.Internal, "can't send verification code: SendVerificationCode", err)
 	}
 
-	err = authService.SendVerificationEmail(user.Email, s.emailSecret, verificationCode)
+	err = authService.SendVerificationEmail(user.Email, s.email, s.emailSecret, verificationCode)
 	if err != nil {
 		return nil, helper.RespondWithErrorGRPC(ctx, codes.Internal, "can't send verification email: SendVerificationCode", err)
 	}

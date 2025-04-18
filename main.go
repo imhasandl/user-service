@@ -24,27 +24,32 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Fatalf("Set Port in env")
+		log.Fatal("Set Port in env")
 	}
 
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
-		log.Fatalf("Set db connection in env")
+		log.Fatal("Set db connection in env")
+	}
+
+	email := os.Getenv("EMAIL")
+	if email == "" {
+		log.Fatal("Set working email for sending emails")
 	}
 	
 	emailSecret := os.Getenv("EMAIL_SECRET")
 	if emailSecret == "" {
-		log.Fatalf("Set up Email Secret")
+		log.Fatal("Set up Email Secret")
 	}
 
 	tokenSecret := os.Getenv("TOKEN_SECRET")
 	if tokenSecret == "" {
-		log.Fatalf("Set db connection in env")
+		log.Fatal("Set db connection in env")
 	}
 
 	rabbitmqURL := os.Getenv("RABBITMQ_URL")
 	if rabbitmqURL == "" {
-		log.Fatalf("Set rabbitmq url in env")
+		log.Fatal("Set rabbitmq url in env")
 	}
 
 	lis, err := net.Listen("tcp", port)
@@ -64,7 +69,7 @@ func main() {
 		log.Fatal("Can't connect to rabbitmq")
 	}
 
-	server := server.NewServer(dbQueries, tokenSecret, rabbitmq)
+	server := server.NewServer(dbQueries, tokenSecret, email, emailSecret, rabbitmq)
 
 	s := grpc.NewServer()
 	pb.RegisterUserServiceServer(s, server)
