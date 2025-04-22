@@ -17,59 +17,91 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func main() {
+// Config holds all configuration variables needed for the application
+type Config struct {
+	Port        string
+	DBURL       string
+	Email       string
+	EmailSecret string
+	TokenSecret string
+	RabbitMQURL string
+}
+
+// loadConfig loads configuration from environment variables
+func loadConfig() (Config, error) {
 	if err := godotenv.Load(".env"); err != nil {
+		return Config{}, err
+	}
+
+	config := Config{
+		Port:        os.Getenv("PORT"),
+		DBURL:       os.Getenv("DB_URL"),
+		Email:       os.Getenv("EMAIL"),
+		EmailSecret: os.Getenv("EMAIL_SECRET"),
+		TokenSecret: os.Getenv("TOKEN_SECRET"),
+		RabbitMQURL: os.Getenv("RABBITMQ_URL"),
+	}
+
+	return config, nil
+}
+
+// validateConfig ensures all required configuration values are set
+func validateConfig(config Config) error {
+	if config.Port == "" {
+		return log.Output(1, "Set Port in env")
+	}
+
+	if config.DBURL == "" {
+		return log.Output(1, "Set db connection in env")
+	}
+
+	if config.Email == "" {
+		return log.Output(1, "Set working email for sending emails")
+	}
+
+	if config.EmailSecret == "" {
+		return log.Output(1, "Set up Email Secret")
+	}
+
+	if config.TokenSecret == "" {
+		return log.Output(1, "Set db connection in env")
+	}
+
+	if config.RabbitMQURL == "" {
+		return log.Output(1, "Set rabbitmq url in env")
+	}
+
+	return nil
+}
+
+func main() {
+	config, err := loadConfig()
+	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		log.Fatal("Set Port in env")
+	if err := validateConfig(config); err != nil {
+		log.Fatal(err)
 	}
 
-	dbURL := os.Getenv("DB_URL")
-	if dbURL == "" {
-		log.Fatal("Set db connection in env")
-	}
-
-	email := os.Getenv("EMAIL")
-	if email == "" {
-		log.Fatal("Set working email for sending emails")
-	}
-	
-	emailSecret := os.Getenv("EMAIL_SECRET")
-	if emailSecret == "" {
-		log.Fatal("Set up Email Secret")
-	}
-
-	tokenSecret := os.Getenv("TOKEN_SECRET")
-	if tokenSecret == "" {
-		log.Fatal("Set db connection in env")
-	}
-
-	rabbitmqURL := os.Getenv("RABBITMQ_URL")
-	if rabbitmqURL == "" {
-		log.Fatal("Set rabbitmq url in env")
-	}
-
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", config.Port)
 	if err != nil {
-		log.Fatalf("failed to listed: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
 
-	dbConn, err := sql.Open("postgres", dbURL)
+	dbConn, err := sql.Open("postgres", config.DBURL)
 	if err != nil {
 		log.Fatalf("Error opening database: %s", err)
 	}
 	dbQueries := database.New(dbConn)
 	defer dbConn.Close()
 
-	rabbitmq, err := rabbitmq.NewRabbitMQ(rabbitmqURL)
+	rabbitmq, err := rabbitmq.NewRabbitMQ(config.RabbitMQURL)
 	if err != nil {
 		log.Fatal("Can't connect to rabbitmq")
 	}
 
-	server := server.NewServer(dbQueries, tokenSecret, email, emailSecret, rabbitmq)
+	server := server.NewServer(dbQueries, config.TokenSecret, config.Email, config.EmailSecret, rabbitmq)
 
 	s := grpc.NewServer()
 	pb.RegisterUserServiceServer(s, server)
@@ -78,6 +110,6 @@ func main() {
 	log.Printf("Server listening on %v", lis.Addr())
 
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to lister: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
 }

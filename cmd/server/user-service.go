@@ -19,22 +19,29 @@ import (
 	pb "github.com/imhasandl/user-service/protos"
 )
 
+// UserServer defines the interface for the user service server
+type UserServer interface {
+	pb.UserServiceServer
+}
+
 type server struct {
 	pb.UnimplementedUserServiceServer
 	db          *database.Queries
 	tokenSecret string
-	email string
+	email       string
 	emailSecret string
-	rabbitmq *rabbitmq.RabbitMQ
+	rabbitmq    *rabbitmq.RabbitMQ
 }
 
-func NewServer(dbQueries *database.Queries, tokenSecret string, email string, emailSecret string, rabbitmq *rabbitmq.RabbitMQ) *server {
+// NewServer creates and returns a new instance of the user service server.
+// It initializes the server with the provided repository, config, and optional handler.
+func NewServer(dbQueries *database.Queries, tokenSecret string, email string, emailSecret string, rabbitmq *rabbitmq.RabbitMQ) UserServer {
 	return &server{
 		db:          dbQueries,
 		tokenSecret: tokenSecret,
-		email: email,
+		email:       email,
 		emailSecret: emailSecret,
-		rabbitmq: rabbitmq,
+		rabbitmq:    rabbitmq,
 	}
 }
 

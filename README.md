@@ -218,6 +218,305 @@ Validates a JWT token and returns the associated user information.
 }
 ```
 
+### GetUserByID
+
+Retrieves a user's information by their ID.
+
+#### Request Format
+
+```json
+{
+   "id": "UUID of the user"
+}
+```
+
+#### Response Format
+
+```json
+{
+   "user": {
+      "id": "UUID of the user",
+      "username": "johndoe",
+      "email": "john.doe@example.com",
+      "created_at": "2023-01-01T12:00:00Z",
+      "updated_at": "2023-01-01T12:00:00Z",
+      "subscribers": "Comma-separated list of subscriber IDs",
+      "subscribed_to": "Comma-separated list of user IDs the user is subscribed to",
+      "is_premium": false,
+      "verification_code": 123456,
+      "is_verified": true
+   }
+}
+```
+
+### GetUserByEmailOrUsername
+
+Retrieves a user's information by their email or username.
+
+#### Request Format
+
+```json
+{
+   "identifier": "johndoe OR john.doe@example.com"
+}
+```
+
+#### Response Format
+
+```json
+{
+   "user": {
+      "id": "UUID of the user",
+      "username": "johndoe",
+      "email": "john.doe@example.com",
+      "created_at": "2023-01-01T12:00:00Z",
+      "updated_at": "2023-01-01T12:00:00Z",
+      "subscribers": "Comma-separated list of subscriber IDs",
+      "subscribed_to": "Comma-separated list of user IDs the user is subscribed to",
+      "is_premium": false,
+      "verification_code": 123456,
+      "is_verified": true
+   }
+}
+```
+
+### GetUserByToken
+
+Validates a JWT token and returns the associated user information.
+
+#### Request Format
+
+```json
+{
+   "token": "JWT token string"
+}
+```
+
+#### Response Format
+
+```json
+{
+   "user": {
+      "id": "UUID of the user",
+      "username": "johndoe",
+      "email": "john.doe@example.com",
+      "created_at": "2023-01-01T12:00:00Z",
+      "updated_at": "2023-01-01T12:00:00Z",
+      "subscribers": "Comma-separated list of subscriber IDs",
+      "subscribed_to": "Comma-separated list of user IDs the user is subscribed to",
+      "is_premium": false,
+      "verification_code": 123456,
+      "is_verified": true
+   }
+}
+```
+
+### GetAllUsers
+
+Retrieves information for all users in the system.
+
+#### Request Format
+
+```json
+{}
+```
+
+#### Response Format
+
+```json
+{
+   "users": [
+      {
+         "id": "UUID of the user 1",
+         "username": "johndoe",
+         "email": "john.doe@example.com",
+         "created_at": "2023-01-01T12:00:00Z",
+         "updated_at": "2023-01-01T12:00:00Z",
+         "subscribers": "Comma-separated list of subscriber IDs",
+         "subscribed_to": "Comma-separated list of user IDs the user is subscribed to",
+         "is_premium": false,
+         "verification_code": 123456,
+         "is_verified": true
+      },
+      {
+         "id": "UUID of the user 2",
+         // Other user properties
+      }
+   ]
+}
+```
+
+### ChangeUsername
+
+Changes a user's username.
+
+#### Request Format
+
+```json
+{
+   "username": "newUsername"
+}
+```
+
+#### Response Format
+
+```json
+{
+   "user": {
+      "id": "UUID of the user",
+      "username": "newUsername",
+      "email": "john.doe@example.com",
+      "created_at": "2023-01-01T12:00:00Z",
+      "updated_at": "2023-01-01T12:00:00Z",
+      "subscribers": "Comma-separated list of subscriber IDs",
+      "subscribed_to": "Comma-separated list of user IDs the user is subscribed to",
+      "is_premium": false,
+      "verification_code": 123456,
+      "is_verified": true
+   }
+}
+```
+
+### ChangePassword
+
+Changes a user's password.
+
+#### Request Format
+
+```json
+{
+   "password": "newSecurePassword"
+}
+```
+
+#### Response Format
+
+```json
+{
+   "status": "Password successfully changed"
+}
+```
+
+### SubscribeUser
+
+Subscribes a user to another user.
+
+#### Request Format
+
+```json
+{
+   "user_id": "UUID of the user to subscribe to"
+}
+```
+
+#### Response Format
+
+```json
+{
+   "status": true
+}
+```
+
+### UnsubscribeUser
+
+Unsubscribes a user from another user.
+
+#### Request Format
+
+```json
+{
+   "user_id": "UUID of the user to unsubscribe from"
+}
+```
+
+#### Response Format
+
+```json
+{
+   "status": true
+}
+```
+
+### SendVerificationCode
+
+Sends a verification code to a user's email.
+
+#### Request Format
+
+```json
+{
+   // Request details would depend on implementation
+}
+```
+
+#### Response Format
+
+```json
+{
+   "status": "Verification code sent successfully"
+}
+```
+
+### ResetPassword
+
+Resets a user's password using a verification code.
+
+#### Request Format
+
+```json
+{
+   "new_password": "newSecurePassword",
+   "verification_code": 123456
+}
+```
+
+#### Response Format
+
+```json
+{
+   "status": "Password reset successfully"
+}
+```
+
+### DeleteUser
+
+Deletes a user account.
+
+#### Request Format
+
+```json
+{
+   "password": "currentPassword",
+   "verify_message": "I understand this action cannot be undone"
+}
+```
+
+#### Response Format
+
+```json
+{
+   "status": "User account deleted successfully"
+}
+```
+
+### DeleteAllUsers
+
+Deletes all user accounts (admin function).
+
+#### Request Format
+
+```json
+{}
+```
+
+#### Response Format
+
+```json
+{
+   "status": "All user accounts deleted successfully"
+}
+```
+
 ## RabbitMQ Integration
 
 The User Service publishes events to RabbitMQ when significant user actions occur, enabling other services to react accordingly.
